@@ -1,0 +1,36 @@
+{
+  "name": "bhdr",
+  "version": "0.0.1",
+  "description": "benchmark utility powered by hdr histograms",
+  "main": "bhdr.js",
+  "scripts": {
+    "test": "standard | snazzy && tap test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcollina/bhdr.git"
+  },
+  "keywords": [
+    "hdr",
+    "histogram",
+    "benchmark",
+    "runner"
+  ],
+  "author": "Matteo Collina <hello@matteocollina.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mcollina/bhdr/issues"
+  },
+  "homepage": "https://github.com/mcollina/bhdr#readme",
+  "devDependencies": {
+    "snazzy": "^5.0.0",
+    "standard": "^8.5.0",
+    "tap": "^8.0.0"
+  },
+  "dependencies": {
+    "fastq": "^1.4.1",
+    "hdr-histogram-percentiles-obj": "^1.1.0",
+    "native-hdr-histogram": "^0.4.1",
+    "reusify": "^1.0.1"
+  }
+}
