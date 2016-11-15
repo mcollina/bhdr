@@ -18,6 +18,7 @@ test('get basic data', function (t) {
     t.equal(loopCalled, 100, 'func called num times')
     t.equal(result.name, 'loop', 'name is set')
     t.equal(result.runs, 100, 'runs are set')
+    t.equal(result.errors, 0, 'no errors')
     t.ok(result.average, 'average exists')
     t.ok(result.stddev, 'stddev exists')
     t.ok(result.min >= 0, 'min exists')

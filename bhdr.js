@@ -19,7 +19,9 @@ function build (func, maxRuns) {
       const ms = end[0] * 1e3 + end[1] / 1e6
       histogram.record(ms)
 
-      errors++
+      if (err) {
+        errors++
+      }
 
       if (++runs < maxRuns) {
         time = process.hrtime()
