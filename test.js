@@ -24,10 +24,48 @@ test('get basic data', function (t) {
     t.equal(result[0].name, 'loop', 'name is set')
     t.equal(result[0].runs, 1000, 'runs are set')
     t.equal(result[0].errors, 0, 'no errors')
-    t.ok(result[0].average, 'average exists')
-    t.ok(result[0].stddev, 'stddev exists')
+    t.ok(result[0].average >= 0, 'average exists')
+    t.ok(result[0].stddev >= 0, 'stddev exists')
     t.ok(result[0].min >= 0, 'min exists')
-    t.ok(result[0].max, 'max exists')
+    t.ok(result[0].max >= 0, 'max exists')
+    t.end()
+  })
+})
+
+test('get basic data with options.iterations', function (t) {
+  const run = build(loop, { iterations: 100 })
+
+  run(function (err, data) {
+    var result = data.results
+    t.error(err)
+    t.ok(data.totalTime, 'there is a total time')
+    t.equal(result.length, 1, 'number of result')
+    t.equal(result[0].name, 'loop', 'name is set')
+    t.equal(result[0].runs, 100, 'runs are set')
+    t.equal(result[0].errors, 0, 'no errors')
+    t.ok(result[0].average >= 0, 'average exists')
+    t.ok(result[0].stddev >= 0, 'stddev exists')
+    t.ok(result[0].min >= 0, 'min exists')
+    t.ok(result[0].max >= 0, 'max exists')
+    t.end()
+  })
+})
+
+test('get basic data with options.max', function (t) {
+  const run = build(loop, { max: 100 })
+
+  run(function (err, data) {
+    var result = data.results
+    t.error(err)
+    t.ok(data.totalTime, 'there is a total time')
+    t.equal(result.length, 1, 'number of result')
+    t.equal(result[0].name, 'loop', 'name is set')
+    t.equal(result[0].runs, 100, 'runs are set')
+    t.equal(result[0].errors, 0, 'no errors')
+    t.ok(result[0].average >= 0, 'average exists')
+    t.ok(result[0].stddev >= 0, 'stddev exists')
+    t.ok(result[0].min >= 0, 'min exists')
+    t.ok(result[0].max >= 0, 'max exists')
     t.end()
   })
 })
@@ -51,10 +89,10 @@ test('array support', function (t) {
     for (var i = 0; i < result.length; i++) {
       t.equal(result[i].runs, 1000, 'runs are set')
       t.equal(result[i].errors, 0, 'no errors')
-      t.ok(result[i].average, 'average exists')
-      t.ok(result[i].stddev, 'stddev exists')
+      t.ok(result[i].average >= 0, 'average exists')
+      t.ok(result[i].stddev >= 0, 'stddev exists')
       t.ok(result[i].min >= 0, 'min exists')
-      t.ok(result[i].max, 'max exists')
+      t.ok(result[i].max >= 0, 'max exists')
     }
     t.end()
   })
@@ -119,10 +157,10 @@ test('does write newline delimited JSON if process.env.BHDR_JSON is set', functi
         t.equal(result.name, 'loop', 'name is set')
         t.equal(result.runs, 1000, 'runs are set')
         t.equal(result.errors, 0, 'no errors')
-        t.ok(result.average, 'average exists')
-        t.ok(result.stddev, 'stddev exists')
+        t.ok(result.average >= 0, 'average exists')
+        t.ok(result.stddev >= 0, 'stddev exists')
         t.ok(result.min >= 0, 'min exists')
-        t.ok(result.max, 'max exists')
+        t.ok(result.max >= 0, 'max exists')
       }
     }
   })
@@ -130,6 +168,29 @@ test('does write newline delimited JSON if process.env.BHDR_JSON is set', functi
   var run = bench([
     loop
   ], 1000)
+
+  run()
+})
+
+test('disable color', function (t) {
+  t.plan(1)
+
+  var bench = proxyquire('./', {
+    console: {
+      log: function (key) {
+        t.notOk(chalk.hasColor(key), 'has no color')
+      }
+    }
+  })
+
+  var run = bench([
+    function first (done) {
+      setImmediate(done)
+    }
+  ], {
+    iterations: 42,
+    color: false
+  })
 
   run()
 })

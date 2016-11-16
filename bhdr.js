@@ -7,10 +7,22 @@ const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'g
 const console = require('console') // for proxyquire in tests
 const process = require('process') // for proxyquire in tests
 
-function build (funcs, maxRuns) {
+function build (funcs, opts) {
+  var maxRuns
+
   if (!Array.isArray(funcs)) {
     funcs = [funcs]
   }
+
+  if (typeof opts === 'object') {
+    maxRuns = opts.max || opts.iterations
+  } else {
+    maxRuns = opts
+  }
+
+  var ctx = new chalk.constructor({
+    enabled: opts.color !== false
+  })
 
   return run
 
@@ -86,11 +98,11 @@ function build (funcs, maxRuns) {
     function consolePrint (result) {
       const color = nextColor()
       if (result.errors) {
-        console.log(chalk.bold(chalk[color](result.name + ': ' + result.errors + ' errors')))
+        console.log(ctx.bold(chalk[color](result.name + ': ' + result.errors + ' errors')))
       } else if (result.mean === 0) {
-        console.log(chalk[color](result.name + ': too fast to measure'))
+        console.log(ctx[color](result.name + ': too fast to measure'))
       } else {
-        console.log(chalk[color](result.name + ': ' + result.mean + ' ops/ms +-' + result.stddev))
+        console.log(ctx[color](result.name + ': ' + result.mean + ' ops/ms +-' + result.stddev))
       }
     }
 
