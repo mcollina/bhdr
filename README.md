@@ -1,4 +1,4 @@
-# bhdr
+# bhdr&nbsp;&nbsp;[![Build Status](https://travis-ci.org/mcollina/bhdr.svg)](https://travis-ci.org/mcollina/bhdr)
 
 Benchmark utility powered by [hdr
 histograms](https://github.com/mcollina/native-hdr-histogram), for node.
