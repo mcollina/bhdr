@@ -28,9 +28,11 @@
     "tap": "^8.0.0"
   },
   "dependencies": {
+    "chalk": "^1.1.3",
     "fastq": "^1.4.1",
     "hdr-histogram-percentiles-obj": "^1.1.0",
     "native-hdr-histogram": "^0.4.1",
+    "proxyquire": "^1.7.10",
     "reusify": "^1.0.1"
   }
 }

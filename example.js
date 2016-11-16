@@ -14,12 +14,4 @@ var run = bench([
   }
 ], 1000)
 
-run(function () {
-  run(function (err, result) {
-    if (err) {
-      console.log(err)
-    } else {
-      console.log(JSON.stringify(result, null, 2))
-    }
-  })
-})
+run(run)

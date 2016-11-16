@@ -1,6 +1,8 @@
 'use strict'
 
 const test = require('tap').test
+const chalk = require('chalk')
+const proxyquire = require('proxyquire')
 const build = require('.')
 
 var loopCalled = 0
@@ -58,25 +60,44 @@ test('array support', function (t) {
   })
 })
 
-// test('has color', function (t) {
-//   var chalkEnabled = chalk.enabled
-//   chalk.enabled = true
-//
-//   var bench = proxyquire('./', {
-//     console: {
-//       log: function (key) {
-//         t.ok(chalk.hasColor(key), 'has color')
-//       }
-//     }
-//   })
-//
-//   t.plan(2)
-//
-//   var run = bench([
-//     loop
-//   ], { iterations: 42 })
-//
-//   run(function () {
-//     chalk.enabled = chalkEnabled
-//   })
-// })
+test('writes to stdout with color if not callback', function (t) {
+  t.plan(1)
+
+  var chalkEnabled = chalk.enabled
+  chalk.enabled = true
+
+  var bench = proxyquire('./', {
+    console: {
+      log: function (key) {
+        t.ok(chalk.hasColor(key), 'has color')
+      }
+    }
+  })
+
+  var run = bench([
+    loop
+  ], 42)
+
+  run(function () {
+    chalk.enabled = chalkEnabled
+  })
+})
+
+test('does not write to stdout if callback with 2 args', function (t) {
+  var bench = proxyquire('./', {
+    console: {
+      log: function () {
+        t.fail('no console log')
+      }
+    }
+  })
+
+  var run = bench([
+    loop
+  ], 42)
+
+  run(function (err, result) {
+    t.error(err)
+    t.end()
+  })
+})

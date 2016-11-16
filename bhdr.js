@@ -2,6 +2,9 @@
 
 const Histogram = require('native-hdr-histogram')
 const histutils = require('hdr-histogram-percentiles-obj')
+const chalk = require('chalk')
+const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray']
+const console = require('console')
 
 function build (funcs, maxRuns) {
   if (!Array.isArray(funcs)) {
@@ -11,8 +14,11 @@ function build (funcs, maxRuns) {
   return run
 
   function run (done) {
+    done = done || noop
     var results = []
     var toExecs = [].concat(funcs)
+    var currentColor = 0
+    var print = done.length < 2 ? consolePrint : noop
 
     runFunc()
 
@@ -47,7 +53,9 @@ function build (funcs, maxRuns) {
           time = process.hrtime()
           func(next)
         } else {
-          results.push(buildResult(histogram, func, errors, runs))
+          const res = buildResult(histogram, func, errors, runs)
+          print(res)
+          results.push(res)
           runFunc()
         }
       }
@@ -62,11 +70,31 @@ function build (funcs, maxRuns) {
 
       return result
     }
+
+    function nextColor () {
+      if (currentColor === colors.length) {
+        currentColor = 0
+      }
+      return colors[currentColor++]
+    }
+
+    function consolePrint (result) {
+      const color = nextColor()
+      if (result.errors) {
+        console.log(chalk.bold(chalk[color](result.name + ': ' + result.errors + ' errors')))
+      } else if (result.mean === 0) {
+        console.log(chalk[color](result.name + ': too fast to measure'))
+      } else {
+        console.log(chalk[color](result.name + ': ' + result.mean + ' ops/ms +-' + result.stddev))
+      }
+    }
   }
 }
 
 function asMs (time) {
   return time[0] * 1e3 + time[1] / 1e6
 }
+
+function noop () {}
 
 module.exports = build
