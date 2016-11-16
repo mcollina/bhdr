@@ -13,16 +13,16 @@ function loop (done) {
 }
 
 test('get basic data', function (t) {
-  const run = build(loop, 100)
+  const run = build(loop, 1000)
 
   run(function (err, data) {
     var result = data.results
     t.error(err)
     t.ok(data.totalTime, 'there is a total time')
     t.equal(result.length, 1, 'number of result')
-    t.equal(loopCalled, 100, 'func called num times')
+    t.equal(loopCalled, 1000, 'func called num times')
     t.equal(result[0].name, 'loop', 'name is set')
-    t.equal(result[0].runs, 100, 'runs are set')
+    t.equal(result[0].runs, 1000, 'runs are set')
     t.equal(result[0].errors, 0, 'no errors')
     t.ok(result[0].average, 'average exists')
     t.ok(result[0].stddev, 'stddev exists')
@@ -39,7 +39,7 @@ test('array support', function (t) {
       for (var i = 0; i < 1000000; i++) {}
       process.nextTick(done)
     }
-  ], 100)
+  ], 1000)
 
   run(function (err, data) {
     t.error(err)
@@ -49,7 +49,7 @@ test('array support', function (t) {
     t.equal(result[0].name, 'loop', 'name is set')
     t.equal(result[1].name, 'loop2', 'name is set')
     for (var i = 0; i < result.length; i++) {
-      t.equal(result[i].runs, 100, 'runs are set')
+      t.equal(result[i].runs, 1000, 'runs are set')
       t.equal(result[i].errors, 0, 'no errors')
       t.ok(result[i].average, 'average exists')
       t.ok(result[i].stddev, 'stddev exists')
@@ -100,4 +100,36 @@ test('does not write to stdout if callback with 2 args', function (t) {
     t.error(err)
     t.end()
   })
+})
+
+test('does write newline delimited JSON if process.env.BHDR_JSON is set', function (t) {
+  t.plan(9)
+
+  var bench = proxyquire('./', {
+    process: {
+      env: {
+        BHDR_JSON: 'true'
+      }
+    },
+    console: {
+      log: function (str) {
+        t.equal(arguments.length, 1)
+        t.ok(typeof str === 'string')
+        var result = JSON.parse(str)
+        t.equal(result.name, 'loop', 'name is set')
+        t.equal(result.runs, 1000, 'runs are set')
+        t.equal(result.errors, 0, 'no errors')
+        t.ok(result.average, 'average exists')
+        t.ok(result.stddev, 'stddev exists')
+        t.ok(result.min >= 0, 'min exists')
+        t.ok(result.max, 'max exists')
+      }
+    }
+  })
+
+  var run = bench([
+    loop
+  ], 1000)
+
+  run()
 })

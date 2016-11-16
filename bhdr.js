@@ -4,7 +4,8 @@ const Histogram = require('native-hdr-histogram')
 const histutils = require('hdr-histogram-percentiles-obj')
 const chalk = require('chalk')
 const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray']
-const console = require('console')
+const console = require('console') // for proxyquire in tests
+const process = require('process') // for proxyquire in tests
 
 function build (funcs, maxRuns) {
   if (!Array.isArray(funcs)) {
@@ -18,7 +19,11 @@ function build (funcs, maxRuns) {
     var results = []
     var toExecs = [].concat(funcs)
     var currentColor = 0
-    var print = done.length < 2 ? consolePrint : noop
+    var print = noop
+
+    if (done.length < 2) {
+      print = process.env.BHDR_JSON ? jsonPrint : consolePrint
+    }
 
     runFunc()
 
@@ -87,6 +92,10 @@ function build (funcs, maxRuns) {
       } else {
         console.log(chalk[color](result.name + ': ' + result.mean + ' ops/ms +-' + result.stddev))
       }
+    }
+
+    function jsonPrint (result) {
+      console.log(JSON.stringify(result))
     }
   }
 }
