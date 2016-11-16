@@ -37,6 +37,7 @@ function build (funcs, opts) {
       print = process.env.BHDR_JSON ? jsonPrint : consolePrint
     }
 
+    var start = process.hrtime()
     runFunc()
 
     function runFunc () {
@@ -54,7 +55,6 @@ function build (funcs, opts) {
       }
 
       var time = process.hrtime()
-      var start = process.hrtime()
       func(next)
 
       function next (err) {
