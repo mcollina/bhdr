@@ -2,10 +2,9 @@
 
 const Histogram = require('native-hdr-histogram')
 const histutils = require('hdr-histogram-percentiles-obj')
-const chalk = require('chalk')
-const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray']
 const console = require('console') // for proxyquire in tests
 const process = require('process') // for proxyquire in tests
+const buildText = require('./lib/text')
 
 function build (funcs, opts) {
   var maxRuns
@@ -20,9 +19,7 @@ function build (funcs, opts) {
     maxRuns = opts
   }
 
-  var ctx = new chalk.constructor({
-    enabled: opts.color !== false
-  })
+  const text = buildText(opts)
 
   return run
 
@@ -30,7 +27,6 @@ function build (funcs, opts) {
     done = done || noop
     var results = []
     var toExecs = [].concat(funcs)
-    var currentColor = 0
     var print = noop
 
     if (done.length < 2) {
@@ -88,22 +84,8 @@ function build (funcs, opts) {
       return result
     }
 
-    function nextColor () {
-      if (currentColor === colors.length) {
-        currentColor = 0
-      }
-      return colors[currentColor++]
-    }
-
     function consolePrint (result) {
-      const color = nextColor()
-      if (result.errors) {
-        console.log(ctx.bold(chalk[color](result.name + ': ' + result.errors + ' errors')))
-      } else if (result.mean === 0) {
-        console.log(ctx[color](result.name + ': too fast to measure'))
-      } else {
-        console.log(ctx[color](result.name + ': ' + result.mean + ' ops/ms +-' + result.stddev))
-      }
+      return console.log(text(result))
     }
 
     function jsonPrint (result) {

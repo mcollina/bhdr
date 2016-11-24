@@ -4,8 +4,7 @@ const t = require('tap')
 const split = require('split2')
 const path = require('path')
 const childProcess = require('child_process')
-
-t.plan(2)
+const chalk = require('chalk')
 
 const args = [
   path.join(__dirname, '../bin.js'),
@@ -27,11 +26,17 @@ const lines = [
   '--> benchmarks/benchA.js',
   'aA: ',
   'aB: ',
+  'aA: ',
+  'aB: ',
   '',
   '--> benchmarks/benchB.js',
   'bA: ',
+  'bB: ',
+  'bA: ',
   'bB: '
 ]
+
+t.plan(lines.length)
 
 child.stderr.pipe(process.stderr)
 
@@ -39,5 +44,5 @@ child
   .stdout
   .pipe(split())
   .on('data', (line) => {
-    t.ok(line.indexOf(lines.shift()) >= 0, 'there is a prefix')
+    t.ok(chalk.stripColor(line).indexOf(lines.shift()) >= 0, 'there is a prefix')
   })

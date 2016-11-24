@@ -42,6 +42,7 @@
     "minimist": "^1.2.0",
     "native-hdr-histogram": "^0.4.1",
     "proxyquire": "^1.7.10",
+    "readable-stream": "^2.2.2",
     "reusify": "^1.0.1",
     "split2": "^2.1.0"
   }
