@@ -11,19 +11,19 @@ const chalk = require('chalk')
 
 const lines = [
   '--> benchmarks/benchA.js',
-  'aA: ',
-  'aB: ',
-  'aA: ',
-  'aB: ',
+  'a: ',
+  'b: ',
+  'a: ',
+  'b: ',
   '',
   '--> benchmarks/benchB.js',
-  'bA: ',
-  'bB: ',
-  'bA: ',
-  'bB: '
+  'a: ',
+  'b: ',
+  'a: ',
+  'b: '
 ]
 
-t.plan(8 + lines.length)
+t.plan(18 + lines.length)
 
 try {
   fs.unlinkSync(file)
@@ -65,11 +65,21 @@ child.on('exit', function () {
 
     data = JSON.parse(data)
 
-    t.ok(data['benchmarks/benchA.js'], 'key for file')
-    t.ok(data['benchmarks/benchA.js']['aA'], 'key for bench aA')
-    t.ok(data['benchmarks/benchA.js']['aB'], 'key for bench aB')
-    t.ok(data['benchmarks/benchB.js'], 'key as bench')
-    t.ok(data['benchmarks/benchB.js']['bA'], 'key for bench bA')
-    t.ok(data['benchmarks/benchB.js']['bB'], 'key for bench bB')
+    t.ok(Array.isArray(data))
+    t.equal(data.length, 2, '2 elements')
+    t.equal(data[0].name, 'benchmarks/benchA.js', 'key for file')
+    t.equal(data[1].name, 'benchmarks/benchB.js', 'key for file')
+    t.ok(Array.isArray(data[0].experiments), 'experiments')
+    t.ok(Array.isArray(data[1].experiments), 'experiments')
+    t.equal(data[0].experiments.length, 4, '2 elements in experiments')
+    t.equal(data[1].experiments.length, 4, '2 elements in experiments')
+    t.equal(data[0].experiments[0].name, 'a', 'key for the experiment')
+    t.equal(data[0].experiments[1].name, 'b', 'key for the experiment')
+    t.equal(data[0].experiments[2].name, 'a', 'key for the experiment')
+    t.equal(data[0].experiments[3].name, 'b', 'key for the experiment')
+    t.equal(data[1].experiments[0].name, 'a', 'key for the experiment')
+    t.equal(data[1].experiments[1].name, 'b', 'key for the experiment')
+    t.equal(data[1].experiments[2].name, 'a', 'key for the experiment')
+    t.equal(data[1].experiments[3].name, 'b', 'key for the experiment')
   })
 })

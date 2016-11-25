@@ -44,6 +44,7 @@
     "proxyquire": "^1.7.10",
     "readable-stream": "^2.2.2",
     "reusify": "^1.0.1",
-    "split2": "^2.1.0"
+    "split2": "^2.1.0",
+    "ttest": "^1.1.0"
   }
 }

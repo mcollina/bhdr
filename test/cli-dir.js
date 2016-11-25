@@ -24,16 +24,16 @@ t.tearDown(() => {
 
 const lines = [
   '--> benchmarks/benchA.js',
-  'aA: ',
-  'aB: ',
-  'aA: ',
-  'aB: ',
+  'a: ',
+  'b: ',
+  'a: ',
+  'b: ',
   '',
   '--> benchmarks/benchB.js',
-  'bA: ',
-  'bB: ',
-  'bA: ',
-  'bB: '
+  'a: ',
+  'b: ',
+  'a: ',
+  'b: '
 ]
 
 t.plan(lines.length)

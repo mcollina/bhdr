@@ -3,10 +3,12 @@
 var bench = require('../../')
 
 var run = bench([
-  function aA (done) {
+  function a (done) {
+    for (var i = 0; i < 10000000; i++) {}
     setImmediate(done)
   },
-  function aB (done) {
+  function b (done) {
+    for (var i = 0; i < 20000000; i++) {}
     process.nextTick(done)
   }
 ], 100)
