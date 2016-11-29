@@ -16,7 +16,7 @@ npm install bhdr
 ```js
 'use strict'
 
-var bench = require('fastbench')
+var bench = require('bhdr')
 
 var run = bench([
   function benchSetTimeout (done) {
