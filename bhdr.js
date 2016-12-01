@@ -17,6 +17,7 @@ function build (funcs, opts) {
     maxRuns = opts.max || opts.iterations
   } else {
     maxRuns = opts
+    opts = {}
   }
 
   const text = buildText(opts)
@@ -37,7 +38,7 @@ function build (funcs, opts) {
     runFunc()
 
     function runFunc () {
-      const histogram = new Histogram(1, 1000000, 5)
+      const histogram = new Histogram(1, 1000000000, 5)
       var runs = 0
       var errors = 0
       var func = toExecs.shift()
@@ -45,7 +46,7 @@ function build (funcs, opts) {
       if (!func) {
         done(null, {
           results,
-          totalTime: asMs(process.hrtime(start))
+          totalTime: asUs(process.hrtime(start))
         })
         return
       }
@@ -55,8 +56,8 @@ function build (funcs, opts) {
 
       function next (err) {
         time = process.hrtime(time)
-        const ms = asMs(time)
-        histogram.record(ms)
+        const us = asUs(time)
+        histogram.record(us)
 
         if (err) {
           errors++
@@ -94,8 +95,8 @@ function build (funcs, opts) {
   }
 }
 
-function asMs (time) {
-  return time[0] * 1e3 + time[1] / 1e6
+function asUs (time) {
+  return time[0] * 1e6 + time[1] / 1e3
 }
 
 function noop () {}
