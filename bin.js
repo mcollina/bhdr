@@ -61,7 +61,6 @@ function run (argv) {
       if (f) {
         console.log('')
         next(f)
-        return
       } else {
         write()
       }
