@@ -34,10 +34,10 @@ function run (argv) {
     process.exit(1)
   }
 
-  var outList = null
+  var outFile = null
 
   if (args.out) {
-    outList = []
+    outFile = fs.createWriteStream(args.out)
   }
 
   const files = args._.reduce(add, [])
@@ -53,30 +53,26 @@ function run (argv) {
         throw err
       }
 
-      if (outList) {
-        outList.push(out)
-      }
+      write(out)
 
       const f = files.shift()
 
       if (f) {
         console.log('')
         next(f)
-      } else {
-        write()
       }
     })
   }
 
-  function write () {
-    if (!outList) {
+  function write (out) {
+    if (!outFile) {
       return
     }
 
-    fs.writeFile(args.out, JSON.stringify(outList, null, 2), function (err) {
-      if (err) {
-        throw err
-      }
+    out.experiments.forEach(function (exp) {
+      // so that the bench name comes first
+      const toWrite = Object.assign({ bench: out.name }, exp)
+      outFile.write(JSON.stringify(toWrite) + '\n')
     })
   }
 }

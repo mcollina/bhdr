@@ -23,7 +23,22 @@ const lines = [
   'b: '
 ]
 
-t.plan(18 + lines.length)
+const expected = {
+  'benchmarks/benchA.js': [
+    'a',
+    'b',
+    'a',
+    'b'
+  ],
+  'benchmarks/benchB.js': [
+    'a',
+    'b',
+    'a',
+    'b'
+  ]
+}
+
+t.plan(Object.keys(expected).reduce((acc, key) => acc + expected[key].length, 0) * 2 + lines.length + 1)
 
 try {
   fs.unlinkSync(file)
@@ -60,26 +75,10 @@ child
   })
 
 child.on('exit', function () {
-  fs.readFile(file, function (err, data) {
-    t.error(err)
-
-    data = JSON.parse(data)
-
-    t.ok(Array.isArray(data))
-    t.equal(data.length, 2, '2 elements')
-    t.equal(data[0].name, 'benchmarks/benchA.js', 'key for file')
-    t.equal(data[1].name, 'benchmarks/benchB.js', 'key for file')
-    t.ok(Array.isArray(data[0].experiments), 'experiments')
-    t.ok(Array.isArray(data[1].experiments), 'experiments')
-    t.equal(data[0].experiments.length, 4, '2 elements in experiments')
-    t.equal(data[1].experiments.length, 4, '2 elements in experiments')
-    t.equal(data[0].experiments[0].name, 'a', 'key for the experiment')
-    t.equal(data[0].experiments[1].name, 'b', 'key for the experiment')
-    t.equal(data[0].experiments[2].name, 'a', 'key for the experiment')
-    t.equal(data[0].experiments[3].name, 'b', 'key for the experiment')
-    t.equal(data[1].experiments[0].name, 'a', 'key for the experiment')
-    t.equal(data[1].experiments[1].name, 'b', 'key for the experiment')
-    t.equal(data[1].experiments[2].name, 'a', 'key for the experiment')
-    t.equal(data[1].experiments[3].name, 'b', 'key for the experiment')
-  })
+  fs.createReadStream(file)
+    .pipe(split(JSON.parse))
+    .on('data', function (exp) {
+      t.ok(expected[exp.bench], 'this benchmark exists')
+      t.equal(exp.name, expected[exp.bench].shift(), 'name of the function matches')
+    })
 })
