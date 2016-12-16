@@ -29,7 +29,8 @@ function run (argv) {
 
   if (args._.length === 0) {
     // TODO better usage
-    console.error('Usage: bdhr files..')
+    console.error('Usage: bdhr [run] files..')
+    console.error('Usage: bdhr compare old new')
     process.exit(1)
   }
 
