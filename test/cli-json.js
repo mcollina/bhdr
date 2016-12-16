@@ -55,7 +55,7 @@ const args = [
 ]
 
 const child = childProcess.spawn(process.execPath, args, {
-  cwd: path.join(__dirname),
+  cwd: __dirname,
   env: process.env,
   stdio: ['ignore', 'pipe', 'pipe'],
   detached: false

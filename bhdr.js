@@ -5,6 +5,7 @@ const histutils = require('hdr-histogram-percentiles-obj')
 const console = require('console') // for proxyquire in tests
 const process = require('process') // for proxyquire in tests
 const buildText = require('./lib/text')
+const path = require('path')
 
 function build (funcs, opts) {
   var maxRuns
@@ -20,6 +21,7 @@ function build (funcs, opts) {
     opts = {}
   }
 
+  const benchName = path.relative(process.cwd(), process.argv[1])
   const text = buildText(opts)
 
   return run
@@ -77,12 +79,12 @@ function build (funcs, opts) {
 
     function buildResult (histogram, func, errors, runs) {
       const result = histutils.histAsObj(histogram)
-      result.name = func.name
       result.runs = maxRuns - (maxRuns - runs)
       result.errors = errors
       histutils.addPercentiles(histogram, result)
 
-      return result
+      // to place the name at the top of the object
+      return Object.assign({ name: func.name }, result)
     }
 
     function consolePrint (result) {
@@ -90,6 +92,7 @@ function build (funcs, opts) {
     }
 
     function jsonPrint (result) {
+      result = Object.assign({ bench: benchName }, result)
       console.log(JSON.stringify(result))
     }
   }

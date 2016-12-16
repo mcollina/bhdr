@@ -71,8 +71,7 @@ function run (argv) {
 
     out.experiments.forEach(function (exp) {
       // so that the bench name comes first
-      const toWrite = Object.assign({ bench: out.name }, exp)
-      outFile.write(JSON.stringify(toWrite) + '\n')
+      outFile.write(JSON.stringify(exp) + '\n')
     })
   }
 }
@@ -89,7 +88,6 @@ function runSingle (opts, cb) {
   const text = buildText({ color: true })
 
   const child = childProcess.spawn(process.execPath, args, {
-    cwd: path.join(__dirname),
     env,
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: false
@@ -129,13 +127,53 @@ function runSingle (opts, cb) {
 function compare (argv) {
   const args = minimist(argv)
 
-  if (args._.length !== 2) {
-    // TODO better usage
-    console.error('Usage: bdhr compare old new')
-    process.exit(1)
+  switch (args._.length) {
+    case 1:
+      readFile(args._[0])
+      break
+    case 2:
+      runTwo(args._.reduce(add, []))
+      break
+    default:
+      // TODO better usage
+      console.error('Usage: bdhr compare old new')
+      process.exit(1)
   }
+}
 
-  const files = args._.reduce(add, [])
+function readFile (file) {
+  const benchmarks = {}
+  fs.createReadStream(file)
+    .pipe(split(function (line) {
+      try {
+        const data = JSON.parse(line)
+        return data
+      } catch (err) {
+        this.emit('skip', line, err)
+        return undefined
+      }
+    }))
+    .on('data', function (exp) {
+      const bench = benchmarks[exp.bench] || {
+        name: exp.bench,
+        experiments: []
+      }
+      benchmarks[exp.bench] = bench
+      bench.experiments.push(exp)
+    })
+    .on('end', function () {
+      const list = Object.keys(benchmarks).map(bench => benchmarks[bench])
+
+      if (list.length !== 2) {
+        console.error('You can compare only two benchmarks,', list.length, ' found')
+        process.exit(1)
+      }
+
+      computeCompare(list[0], list[1])
+    })
+}
+
+function runTwo (files) {
   const oldBenchName = path.relative(process.cwd(), files[0])
   const newBenchName = path.relative(process.cwd(), files[1])
 
@@ -157,29 +195,33 @@ function compare (argv) {
         throw err
       }
 
-      const stat = compareData(outOld, outNew)
-
-      const text = buildText({ color: false, prefix: false })
-
-      const data = Object.keys(stat).reduce(function (res, key) {
-        const obj = {}
-
-        obj.bench = key
-        obj[oldBenchName] = text(stat[key].old)
-        obj[newBenchName] = text(stat[key].new)
-
-        const color = stat[key].difference.indexOf('-') === 0 ? chalk.red : chalk.green
-
-        obj.difference = color(stat[key].difference)
-        obj.significant = chalk.bold(stat[key].significant)
-
-        res.push(obj)
-        return res
-      }, [])
-
-      console.log(columnify(data))
+      computeCompare(outOld, outNew)
     })
   })
+}
+
+function computeCompare (outOld, outNew) {
+  const stat = compareData(outOld, outNew)
+
+  const text = buildText({ color: false, prefix: false })
+
+  const data = Object.keys(stat).reduce(function (res, key) {
+    const obj = {}
+
+    obj.bench = key
+    obj[outOld.name] = text(stat[key].old)
+    obj[outNew.name] = text(stat[key].new)
+
+    const color = stat[key].difference.indexOf('-') === 0 ? chalk.red : chalk.green
+
+    obj.difference = color(stat[key].difference)
+    obj.significant = chalk.bold(stat[key].significant)
+
+    res.push(obj)
+    return res
+  }, [])
+
+  console.log(columnify(data))
 }
 
 function add (acc, file) {
