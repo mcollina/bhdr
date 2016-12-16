@@ -2,10 +2,10 @@
 
 const Histogram = require('native-hdr-histogram')
 const histutils = require('hdr-histogram-percentiles-obj')
-const chalk = require('chalk')
-const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray']
 const console = require('console') // for proxyquire in tests
 const process = require('process') // for proxyquire in tests
+const buildText = require('./lib/text')
+const path = require('path')
 
 function build (funcs, opts) {
   var maxRuns
@@ -18,11 +18,11 @@ function build (funcs, opts) {
     maxRuns = opts.max || opts.iterations
   } else {
     maxRuns = opts
+    opts = {}
   }
 
-  var ctx = new chalk.constructor({
-    enabled: opts.color !== false
-  })
+  const benchName = path.relative(process.cwd(), process.argv[1])
+  const text = buildText(opts)
 
   return run
 
@@ -30,7 +30,6 @@ function build (funcs, opts) {
     done = done || noop
     var results = []
     var toExecs = [].concat(funcs)
-    var currentColor = 0
     var print = noop
 
     if (done.length < 2) {
@@ -41,7 +40,7 @@ function build (funcs, opts) {
     runFunc()
 
     function runFunc () {
-      const histogram = new Histogram(1, 1000000, 5)
+      const histogram = new Histogram(1, 1000000000, 5)
       var runs = 0
       var errors = 0
       var func = toExecs.shift()
@@ -49,7 +48,7 @@ function build (funcs, opts) {
       if (!func) {
         done(null, {
           results,
-          totalTime: asMs(process.hrtime(start))
+          totalTime: asUs(process.hrtime(start))
         })
         return
       }
@@ -59,8 +58,8 @@ function build (funcs, opts) {
 
       function next (err) {
         time = process.hrtime(time)
-        const ms = asMs(time)
-        histogram.record(ms)
+        const us = asUs(time)
+        histogram.record(us)
 
         if (err) {
           errors++
@@ -80,40 +79,27 @@ function build (funcs, opts) {
 
     function buildResult (histogram, func, errors, runs) {
       const result = histutils.histAsObj(histogram)
-      result.name = func.name
       result.runs = maxRuns - (maxRuns - runs)
       result.errors = errors
       histutils.addPercentiles(histogram, result)
 
-      return result
-    }
-
-    function nextColor () {
-      if (currentColor === colors.length) {
-        currentColor = 0
-      }
-      return colors[currentColor++]
+      // to place the name at the top of the object
+      return Object.assign({ name: func.name }, result)
     }
 
     function consolePrint (result) {
-      const color = nextColor()
-      if (result.errors) {
-        console.log(ctx.bold(chalk[color](result.name + ': ' + result.errors + ' errors')))
-      } else if (result.mean === 0) {
-        console.log(ctx[color](result.name + ': too fast to measure'))
-      } else {
-        console.log(ctx[color](result.name + ': ' + result.mean + ' ops/ms +-' + result.stddev))
-      }
+      return console.log(text(result))
     }
 
     function jsonPrint (result) {
+      result = Object.assign({ bench: benchName }, result)
       console.log(JSON.stringify(result))
     }
   }
 }
 
-function asMs (time) {
-  return time[0] * 1e3 + time[1] / 1e6
+function asUs (time) {
+  return time[0] * 1e6 + time[1] / 1e3
 }
 
 function noop () {}

@@ -3,7 +3,8 @@
 const test = require('tap').test
 const chalk = require('chalk')
 const proxyquire = require('proxyquire')
-const build = require('.')
+const build = require('..')
+const path = require('path')
 
 var loopCalled = 0
 function loop (done) {
@@ -104,7 +105,7 @@ test('writes to stdout with color if not callback', function (t) {
   var chalkEnabled = chalk.enabled
   chalk.enabled = true
 
-  var bench = proxyquire('./', {
+  var bench = proxyquire('../', {
     console: {
       log: function (key) {
         t.ok(chalk.hasColor(key), 'has color')
@@ -122,7 +123,7 @@ test('writes to stdout with color if not callback', function (t) {
 })
 
 test('does not write to stdout if callback with 2 args', function (t) {
-  var bench = proxyquire('./', {
+  var bench = proxyquire('../', {
     console: {
       log: function () {
         t.fail('no console log')
@@ -141,9 +142,9 @@ test('does not write to stdout if callback with 2 args', function (t) {
 })
 
 test('does write newline delimited JSON if process.env.BHDR_JSON is set', function (t) {
-  t.plan(9)
+  t.plan(10)
 
-  var bench = proxyquire('./', {
+  var bench = proxyquire('../', {
     process: {
       env: {
         BHDR_JSON: 'true'
@@ -154,6 +155,7 @@ test('does write newline delimited JSON if process.env.BHDR_JSON is set', functi
         t.equal(arguments.length, 1)
         t.ok(typeof str === 'string')
         var result = JSON.parse(str)
+        t.equal(result.bench, path.relative(process.cwd(), __filename), 'bench name is set')
         t.equal(result.name, 'loop', 'name is set')
         t.equal(result.runs, 1000, 'runs are set')
         t.equal(result.errors, 0, 'no errors')
@@ -175,7 +177,7 @@ test('does write newline delimited JSON if process.env.BHDR_JSON is set', functi
 test('disable color', function (t) {
   t.plan(1)
 
-  var bench = proxyquire('./', {
+  var bench = proxyquire('../', {
     console: {
       log: function (key) {
         t.notOk(chalk.hasColor(key), 'has no color')
